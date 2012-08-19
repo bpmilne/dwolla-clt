@@ -16,9 +16,11 @@ Automatic installtion:
 ## Usage
 
 Login to your account by typing:
+
     dwolla login
 
 Then, use the different methods to interact with your money:
+
     dwolla balance
     dwolla send
     dwolla transactions
