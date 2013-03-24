@@ -1,2 +1,0 @@
-dwolla>=1.4.8
-argparse>=1.2.1
