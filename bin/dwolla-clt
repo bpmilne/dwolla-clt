@@ -46,7 +46,13 @@ def is_dwolla(dwollaId):
     if (len(stripped) == 10) and (stripped[0:3] == '812'):
     	return True
     return False    
-    
+
+def is_phone(phoneNumber):
+    stripped = re.sub("[^0-9]", '', phoneNumber)
+    if len(stripped) == 10:
+    	return True
+    return False
+
 # Main menu
 def main():    
     args = parser.parse_args()
@@ -100,15 +106,21 @@ def send(args):
         args.pin = getpass.getpass('Your PIN: ')
 
     # Try to determine the destination type
-    if is_dwolla(args.destination_id) and ((not args.destination_type) or (args.destination_type and args.destination_type.lower() != 'dwolla')):
-        isDwollaQ = raw_input('That destination looks like a Dwolla ID. Is this correct? [y/n] defaults to yes: ')
-        if not isDwollaQ or isDwollaQ == 'y':
-            args.destination_type = 'Dwolla'
+    if not args.destination_type:
+        if is_dwolla(args.destination_id):
+            isDwollaQ = raw_input('That destination looks like a Dwolla ID. Is this correct? [y/n] defaults to yes: ')
+            if not isDwollaQ or isDwollaQ == 'y':
+                args.destination_type = 'Dwolla'
 
-    if is_email(args.destination_id) and ((not args.destination_type) or (args.destination_type and args.destination_type.lower() != 'email')):
-        isEmailQ = raw_input('That destination looks like an email address. Is this correct? [y/n] defaults to no: ')
-        if isEmailQ == 'y':
-            args.destination_type = 'Email'
+        elif is_email(args.destination_id):
+            isEmailQ = raw_input('That destination looks like an email address. Is this correct? [y/n] defaults to no: ')
+            if isEmailQ == 'y':
+                args.destination_type = 'Email'
+
+        elif is_phone(args.destination_id):
+            isPhoneQ = raw_input('Is the destination a phone number? [y/n] defaults to no: ')
+            if isPhoneQ == 'y':
+                args.destination_type = 'Phone'
 
     # Start request
     print 'Sending...'
@@ -140,15 +152,21 @@ def request(args):
         args.amount = raw_input('Amount: ')
 
     # Try to determine the destination type
-    if is_dwolla(args.source_id) and ((not args.source_type) or (args.source_type and args.source_type.lower() != 'dwolla')):
-        isDwollaQ = raw_input('That source looks like a Dwolla ID. Is this correct? [y/n] defaults to yes: ')
-        if not isDwollaQ or isDwollaQ == 'y':
-            args.source_type = 'Dwolla'
+    if not args.source_type:
+        if is_dwolla(args.source_id):
+            isDwollaQ = raw_input('That source looks like a Dwolla ID. Is this correct? [y/n] defaults to yes: ')
+            if not isDwollaQ or isDwollaQ == 'y':
+                args.source_type = 'Dwolla'
 
-    if is_email(args.source_id) and ((not args.source_type) or (args.source_type and args.source_type.lower() != 'email')):
-        isEmailQ = raw_input('That source looks like an email address. Is this correct? [y/n] defaults to no: ')
-        if isEmailQ == 'y':
-            args.source_type = 'Email'
+        elif is_email(args.source_id):
+            isEmailQ = raw_input('That source looks like an email address. Is this correct? [y/n] defaults to no: ')
+            if isEmailQ == 'y':
+                args.source_type = 'Email'
+
+        elif is_phone(args.source_id):
+            isPhoneQ = raw_input('Is the source a phone number? [y/n] defaults to no: ')
+            if isPhoneQ == 'y':
+                args.source_type = 'Phone'
 
     # Start request
     print 'Requesting...'
@@ -267,7 +285,7 @@ def contacts(args):
 parser = argparse.ArgumentParser(
     description='Dwolla Command Line Tools: Interact with your Dwolla account right from your Terminal.'
 )
-parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.2.3')
+parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.2.4')
 
 subparsers = parser.add_subparsers()
 
