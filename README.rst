@@ -13,6 +13,10 @@ The recommended way to install dwolla-clt is [through
 pip](http://pypi.python.org/). Just type:
 
     [sudo] pip install dwolla-clt
+    
+Alternatively, you can use Python's easy_install tool:
+
+    [sudo] easy_install dwolla-clt
 
 ## Usage
 
