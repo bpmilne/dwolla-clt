@@ -1,19 +1,17 @@
-#!/usr/bin/env python
-
 from setuptools import setup
 
 setup(
     name='dwolla-clt',
     license='MIT',
-    py_modules=['dwolla-clt'],
-    version='1.0.19dev',
+    version='1.2.1',
     install_requires=[
         'dwolla>=1.4.8',
         'argparse>=1.2.1'
     ],
+    scripts=['bin/dwolla-clt'],
     
     description='Dwolla Command Line Tools',
-    long_description=open('README').read(),
+    long_description=open('README.rst').read(),
     
     author='Michael Schonfeld',
     author_email='michael@dwolla.com',

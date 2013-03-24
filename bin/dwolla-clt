@@ -1,9 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
 import argparse
 import shelve
 import sys
 import re
 import webbrowser
+import getpass
 from dwolla import DwollaUser, DwollaClientApp, DwollaAPIError
 
 config = shelve.open('dwolla-clt')
@@ -35,6 +37,9 @@ def is_email(email):
 	return False
 
 def is_dwolla(dwollaId):
+    stripped = re.sub("[^0-9]", '', dwollaId)
+    if (len(stripped) == 10) and (stripped[0:3] == '812'):
+    	return True
     return False    
     
 # Main menu
@@ -52,7 +57,10 @@ def logout(args):
     print 'You are now logged out.'
     
 def login(args):
-    raw_input("Let's get you set up with an OAuth token. We'll send you off to a webpage where you can generate a token. Copy that and paste it in the next step.")
+    print ''
+    print "In order for this tool to work, we'll need to get you set up with an OAuth token."
+    print "We'll send you off to a webpage where you can generate a new token. Copy that and paste it in the next step."
+    raw_input('Press any key to continue...')
     webbrowser.open('http://developers.dwolla.com/dev/token')
 
     print ''
@@ -60,7 +68,7 @@ def login(args):
     config['token'] = token
 
     print ''
-    print 'Awesome. You should be all set now. Try running "dwolla me"'
+    print 'Awesome. You should be all set now. Try running "dwolla-clt me"'
 
     config.sync()
     return True
@@ -84,15 +92,15 @@ def send(args):
     while not args.amount:
         args.amount = raw_input('Amount: ')
     while not args.pin:
-        args.pin = raw_input('Your PIN: ')
+        args.pin = getpass.getpass('Your PIN: ')
 
     # Try to determine the destination type
-    if is_dwolla(args.destination_id):
+    if is_dwolla(args.destination_id) and ((not args.destination_type) or (args.destination_type and args.destination_type.lower() != 'dwolla')):
         isDwollaQ = raw_input('That destination looks like a Dwolla ID. Is this correct? [y/n] defaults to yes: ')
         if not isDwollaQ or isDwollaQ == 'y':
             args.destination_type = 'Dwolla'
 
-    if is_email(args.destination_id):
+    if is_email(args.destination_id) and ((not args.destination_type) or (args.destination_type and args.destination_type.lower() != 'email')):
         isEmailQ = raw_input('That destination looks like an email address. Is this correct? [y/n] defaults to no: ')
         if isEmailQ == 'y':
             args.destination_type = 'Email'
@@ -128,12 +136,12 @@ def request(args):
         args.amount = raw_input('Amount: ')
 
     # Try to determine the destination type
-    if is_dwolla(args.source_id):
+    if is_dwolla(args.source_id) and ((not args.source_type) or (args.source_type and args.source_type.lower() != 'dwolla')):
         isDwollaQ = raw_input('That source looks like a Dwolla ID. Is this correct? [y/n] defaults to yes: ')
         if not isDwollaQ or isDwollaQ == 'y':
             args.source_type = 'Dwolla'
 
-    if is_email(args.source_id):
+    if is_email(args.source_id) and ((not args.source_type) or (args.source_type and args.source_type.lower() != 'email')):
         isEmailQ = raw_input('That source looks like an email address. Is this correct? [y/n] defaults to no: ')
         if isEmailQ == 'y':
             args.source_type = 'Email'
@@ -203,6 +211,8 @@ def balance(args):
 
 # Init CLT
 parser = argparse.ArgumentParser(description='Dwolla tools.')
+parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.2.1')
+
 subparsers = parser.add_subparsers()
 
 # Subcommand: Login
@@ -213,7 +223,7 @@ login_parser.set_defaults(func=login)
 logout_parser = subparsers.add_parser('logout', help='Logout')
 logout_parser.set_defaults(func=logout)
 
-# Subcommand: Config
+# Subcommand: Show Config
 config_parser = subparsers.add_parser('config', help='Show config')
 config_parser.set_defaults(func=showconfig)
 
@@ -259,6 +269,7 @@ balance_parser.set_defaults(func=balance)
 funding_parser = subparsers.add_parser('funding', help='Funding source(s)')
 funding_parser.add_argument('funding_id', nargs='?', help='Funding Source ID', default=None)
 funding_parser.set_defaults(func=fundingSources)
+
 
 # Start CLT, and wrap for exceptions
 try:
