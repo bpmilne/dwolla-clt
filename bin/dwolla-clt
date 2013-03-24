@@ -14,7 +14,7 @@ config = shelve.open('dwolla-clt')
 def pretty(d, indent=0):
     if type(d) is list:
         for i, item in enumerate(d):
-            pretty_print(item, indent)
+            pretty(item, indent)
             if i < (len(d) - 1):
                 print '--------------------------------'
     else:
@@ -23,7 +23,12 @@ def pretty(d, indent=0):
 def pretty_print(d, indent=0):
     if d is not None and d != '':
         for key, value in d.iteritems():
-            print str(key) + ": " + str(value)
+            sys.stdout.write('\t' * indent + str(key) + ': ')
+            if isinstance(value, dict):
+                print ''
+                pretty_print(value, indent+1)
+            else:
+                print str(value)
 
 def gatekeeper():
     if not config.has_key('token'):
@@ -123,8 +128,7 @@ def send(args):
         params['assume_cost'] = args.assume_costs
 
     # Send request and print response
-    print DwollaUser(config['token']).send_funds(**params)
-    print 'Sent!'
+    print 'Sent! Transaction ID: ', DwollaUser(config['token']).send_funds(**params)
 
 def request(args):
     gatekeeper()
@@ -162,8 +166,7 @@ def request(args):
         params['notes'] = args.notes
 
     # Send request and print response
-    print DwollaUser(config['token']).request_funds(**params)
-    print 'Requested!'
+    print 'Requested! Request ID: ', DwollaUser(config['token']).request_funds(**params)
 
 def requests(args):
     gatekeeper()
@@ -174,8 +177,8 @@ def requests(args):
                 print 'Canceling request with ID "%s"...' % args.request_id
                 DwollaUser(config['token']).cancel_request(args.request_id)
                 return pretty('Request canceled!')
-        if args.fulfill:
-            return pretty('too bad')
+#         if args.fulfill:
+#             return pretty('too bad')
         else:
             print 'Retrieving request with ID "%s"...' % args.request_id
             return pretty(DwollaUser(config['token']).get_request(args.request_id))
@@ -210,7 +213,9 @@ def balance(args):
 
 
 # Init CLT
-parser = argparse.ArgumentParser(description='Dwolla tools.')
+parser = argparse.ArgumentParser(
+    description='Dwolla Command Line Tools: Interact with your Dwolla account right from your Terminal.'
+)
 parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.2.1')
 
 subparsers = parser.add_subparsers()
@@ -249,7 +254,7 @@ request_parser.set_defaults(func=request)
 requests_parser = subparsers.add_parser('requests', help='Money requests')
 requests_parser.add_argument('request_id', nargs='?', default=None, help='Request ID')
 requests_parser.add_argument('-c', '--cancel', dest='cancel', action='store_true', help='Cancel Request')
-requests_parser.add_argument('-f', '--fulfill', dest='fulfill', action='store_true', help='Fulfill Request')
+# requests_parser.add_argument('-f', '--fulfill', dest='fulfill', action='store_true', help='Fulfill Request')
 requests_parser.set_defaults(func=requests)
 
 # Subcommand: Transactions
