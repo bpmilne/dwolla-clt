@@ -7,23 +7,17 @@
 ## Requirements
 - [Python](http://www.python.org/)
 
-## Installation
-
-Automatic installtion:
-
-    dwolla setup
-
 ## Usage
 
 Login to your account by typing:
 
-    dwolla login
+    dwolla-clt login
 
 Then, use the different methods to interact with your money:
 
-    dwolla balance
-    dwolla send
-    dwolla transactions
+    dwolla-clt balance
+    dwolla-clt send
+    dwolla-clt transactions
     ...
 
 ## Credits
@@ -43,7 +37,7 @@ http://developers.dwolla.com/dev
 
 (The MIT License)
 
-Copyright (c) 2012 Dwolla &lt;michael@dwolla.com&gt;
+Copyright (c) 2013 Dwolla &lt;michael@dwolla.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
