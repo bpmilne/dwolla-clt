@@ -1,3 +1,4 @@
 dwolla-clt.db
 *.pyc
-
+dist/
+dwolla_clt.egg-info/
