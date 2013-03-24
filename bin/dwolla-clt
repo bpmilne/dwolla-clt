@@ -177,8 +177,8 @@ def requests(args):
                 print 'Canceling request with ID "%s"...' % args.request_id
                 DwollaUser(config['token']).cancel_request(args.request_id)
                 return pretty('Request canceled!')
-#         if args.fulfill:
-#             return pretty('too bad')
+        elif args.fulfill:
+            return pretty('too bad')
         else:
             print 'Retrieving request with ID "%s"...' % args.request_id
             return pretty(DwollaUser(config['token']).get_request(args.request_id))
@@ -190,8 +190,39 @@ def fundingSources(args):
     gatekeeper()
 
     if args.funding_id:
-        print 'Retrieving funding source with ID "%s"...' % args.funding_id
-        pretty(DwollaUser(config['token']).get_funding_source(args.funding_id))
+        if args.withdraw:
+            pin = None
+            while not pin:
+                pin = getpass.getpass('Your PIN: ')
+
+            if raw_input('Are you sure you wish to withdraw $%s to this bank account [y/n] defaults to no: ' % args.withdraw) == 'y':
+                print 'Withdrawing $%s to bank account with ID "%s"...' % (args.withdraw, args.funding_id)
+
+                params = {}
+                params['source_id'] = args.funding_id
+                params['amount'] = args.withdraw
+                params['pin'] = pin
+
+                print ''
+                return pretty(DwollaUser(config['token']).withdraw(**params))
+        elif args.deposit:
+            pin = None
+            while not pin:
+                pin = getpass.getpass('Your PIN: ')
+
+            if raw_input('Are you sure you wish to deposit $%s from this bank account [y/n] defaults to no: ' % args.deposit) == 'y':
+                print 'Depositing $%s from bank account with ID "%s"...' % (args.deposit, args.funding_id)
+
+                params = {}
+                params['source_id'] = args.funding_id
+                params['amount'] = args.deposit
+                params['pin'] = pin
+
+                print ''
+                return pretty(DwollaUser(config['token']).deposit(**params))
+        else:
+            print 'Retrieving funding source with ID "%s"...' % args.funding_id
+            return pretty(DwollaUser(config['token']).get_funding_source(args.funding_id))
     else:
         print 'Retrieving funding sources...'
         pretty(DwollaUser(config['token']).get_funding_sources())
@@ -210,6 +241,26 @@ def balance(args):
     gatekeeper()
     print 'Retrieving balance...'
     print 'Your account balance is: $' + str(DwollaUser(config['token']).get_balance())
+    
+def contacts(args):
+    gatekeeper()
+
+    # Start request
+    print 'Retrieving contacts...'
+
+    # Required Parameters
+    params = {}
+
+    # Optional Parameters
+    if args.search:
+        params['search'] = args.search
+    if args.types:
+        params['types'] = args.types
+    if args.limit:
+        params['limit'] = args.limit
+
+    # Send request and print response
+    pretty(DwollaUser(config['token']).get_contacts(**params))
 
 
 # Init CLT
@@ -254,7 +305,7 @@ request_parser.set_defaults(func=request)
 requests_parser = subparsers.add_parser('requests', help='Money requests')
 requests_parser.add_argument('request_id', nargs='?', default=None, help='Request ID')
 requests_parser.add_argument('-c', '--cancel', dest='cancel', action='store_true', help='Cancel Request')
-# requests_parser.add_argument('-f', '--fulfill', dest='fulfill', action='store_true', help='Fulfill Request')
+requests_parser.add_argument('-f', '--fulfill', dest='fulfill', action='store_true', help='Fulfill Request')
 requests_parser.set_defaults(func=requests)
 
 # Subcommand: Transactions
@@ -273,7 +324,16 @@ balance_parser.set_defaults(func=balance)
 # Subcommand: Funding
 funding_parser = subparsers.add_parser('funding', help='Funding source(s)')
 funding_parser.add_argument('funding_id', nargs='?', help='Funding Source ID', default=None)
+funding_parser.add_argument('-w', '--withdraw', metavar='withdraw', dest='withdraw', help='Withdraw funds (enter $ amount)')
+funding_parser.add_argument('-d', '--deposit', metavar='deposit', dest='deposit', help='Deposit funds (enter $ amount)')
 funding_parser.set_defaults(func=fundingSources)
+
+# Subcommand: Contacts
+contacts_parser = subparsers.add_parser('contacts', help='Contacts')
+contacts_parser.add_argument('-s', '--search', metavar='search', dest='search', help='Search Term')
+contacts_parser.add_argument('-t', '--types', metavar='types', dest='types', help='Types')
+contacts_parser.add_argument('-l', '--limit', metavar='limit', dest='limit', help='Limit')
+contacts_parser.set_defaults(func=contacts)
 
 
 # Start CLT, and wrap for exceptions
