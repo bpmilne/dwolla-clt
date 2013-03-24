@@ -216,7 +216,7 @@ def balance(args):
 parser = argparse.ArgumentParser(
     description='Dwolla Command Line Tools: Interact with your Dwolla account right from your Terminal.'
 )
-parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.2.1')
+parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.2.2')
 
 subparsers = parser.add_subparsers()
 

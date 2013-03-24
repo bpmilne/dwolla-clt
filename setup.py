@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='dwolla-clt',
     license='MIT',
-    version='1.2.1',
+    version='1.2.2',
     install_requires=[
         'dwolla>=1.4.8',
         'argparse>=1.2.1'
